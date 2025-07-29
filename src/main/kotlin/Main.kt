@@ -1,4 +1,8 @@
+import java.time.LocalDateTime
+import java.time.DateTimeException
 import java.time.LocalDate
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
 
 data class Employee(
     val employeeID: Int,
@@ -11,7 +15,9 @@ data class Employee(
 
 data class EmployeeAttendance(
     val employeeID: Int,
-    val checkInDate: String,
+    val checkInDateTime: LocalDateTime,
+    val checkOutDateTime: LocalDateTime? = null,
+    val workingHours: LocalTime?= null
 )
 
 val employees = mutableListOf<Employee>()
@@ -58,24 +64,53 @@ fun employeeList()
     }
 }
 
+fun inputCheckIn(): LocalDateTime {
+    println("Would you like to enter the check-in date and time?\nYes/No: ")
+    val checkInresponse = readlnOrNull()
+    var checkinDate: LocalDateTime = LocalDateTime.now().withSecond(0).withNano(0)
+
+    if (checkInresponse != null && (checkInresponse.lowercase() == "yes" || checkInresponse.lowercase() == "y")) {
+        println("Please Enter the Date of Check-In (Format: DD-MM-YYYY):")
+        val userCheckInDate: String = readln()
+        println("Please Enter the Time of Check-In (Format: HH:MM):")
+        val userCheckInTime: String = readln()
+
+        val dateTimeStr = "$userCheckInDate $userCheckInTime"
+        val formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm")
+
+        try {
+            checkinDate = LocalDateTime.parse(dateTimeStr, formatter)
+        }
+        catch (e: Exception) {
+            println("Invalid date/time format. Using current date and time instead.")
+        }
+    }
+    else
+    {
+        println("Proceeding with current time and date as Check-In Date Time...")
+    }
+
+    return checkinDate
+}
+
+
 // checks whether the list of employee has the input employee id
 fun validateEmployeeID(empID: Int): Boolean{
     return employees.any{it.employeeID == empID}
 }
 
 // function that validates the existing check-in of the employee for the check-in date
-fun validateAttendance(empID: Int, checkInDate: String): Boolean{
-    return attendanceList.none { it.employeeID == empID && it.checkInDate == checkInDate }
+fun validateAttendance(empID: Int, checkInDate: LocalDateTime): Boolean{
+    return attendanceList.none { it.employeeID == empID && it.checkInDateTime.toLocalDate() == checkInDate.toLocalDate() }
 }
 
-// creating checkin for the check-in date
-fun createCheckin(empID: Int, checkInDate: String)
+// creating check-in for the check-in date
+fun createCheckin(empID: Int, checkInDate: LocalDateTime)
 {
     try {
         //checks the attendanceList, whether the system has attendance for the check-in date.
-        // If not this add the date.
+        // If not this add the date and employee details into the .
         attendanceList.add(EmployeeAttendance(empID, checkInDate))
-        println("AttendanceList $attendanceList")
     }
     catch (e: Exception)
     {
@@ -108,7 +143,8 @@ fun main()
             }
             else
             {
-                val checkinDate: String = LocalDate.now().toString()
+                // Calls the inputCheckIn function to get the user input for checkin date time, else takes the current date time.
+                var checkinDate = inputCheckIn()
 
                 if (validateAttendance(empID, checkinDate)) {
                     println("Creating Check-In for the employee ID $empID")
