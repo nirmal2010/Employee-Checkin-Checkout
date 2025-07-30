@@ -185,9 +185,14 @@ fun workingHoursList(attendanceList: List<DataAttendance>): String {
     {
         return "No attendance records found.\nPlease make sure you have checked in to generate attendance report."
     }
-    return attendanceList.joinToString(separator = "\n")
-    {
-        "Employee ID: ${it.employeeID}, Check-In DateTime: ${it.checkInDateTime}, Check-Out DateTime: ${it.checkOutDateTime ?: "Yet to Check Out"}, Working Hours: ${it.workingHours ?: "N/A"}"
+    return attendanceList.joinToString(separator = "\n") { recordAttendance ->
+        val employee = employees.find { it.employeeID == recordAttendance.employeeID }
+        val employeeName = if (employee != null) "${employee.firstName} ${employee.lastName}" else "Unknown"
+
+        "Employee ID: ${recordAttendance.employeeID}, Name: $employeeName, " +
+                "Check-In: ${recordAttendance.checkInDateTime}, " +
+                "Check-Out: ${recordAttendance.checkOutDateTime ?: "Yet to Check Out"}, " +
+                "Working Hours: ${recordAttendance.workingHours ?: "N/A"}"
     }
 }
 
