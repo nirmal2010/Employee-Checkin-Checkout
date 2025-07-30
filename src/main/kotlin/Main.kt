@@ -1,6 +1,7 @@
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
+import java.time.Duration
 
 data class DataEmployee(
     val employeeID: Int,
@@ -145,7 +146,7 @@ fun createCheckOut(empID: Int, checkOutDate: LocalDateTime): String {
 
                 //java duration is used to find the difference of time between the check-in and check-out.
                 //toMinute() helps to convert the obtained value(in seconds) to minutes.
-                val workingMinutes = java.time.Duration.between(attendance.checkInDateTime, checkOutDate).toMinutes()
+                val workingMinutes = Duration.between(attendance.checkInDateTime, checkOutDate).toMinutes()
 
                 //formatting the obtained minutes of working into hour format
                 val formattedWorkingHours = LocalTime.of((workingMinutes / 60).toInt(), (workingMinutes % 60).toInt())
@@ -180,9 +181,13 @@ fun createCheckOut(empID: Int, checkOutDate: LocalDateTime): String {
 }
 
 fun workingHoursList(attendanceList: List<DataAttendance>): String {
+    if (attendanceList.isEmpty())
+    {
+        return "No attendance records found.\nPlease make sure you have checked in to generate attendance report."
+    }
     return attendanceList.joinToString(separator = "\n")
     {
-        "Employee ID: ${it.employeeID}, Check-In DateTime: ${it.checkInDateTime}, Check-Out DateTime: ${it.checkOutDateTime}, Working Hours: ${it.workingHours ?: "Not recorded yet"}"
+        "Employee ID: ${it.employeeID}, Check-In DateTime: ${it.checkInDateTime}, Check-Out DateTime: ${it.checkOutDateTime ?: "Yet to Check Out"}, Working Hours: ${it.workingHours ?: "N/A"}"
     }
 }
 
@@ -304,7 +309,7 @@ fun main() {
                         // Use inputCheckOut() to validate user input and default if necessary
                         val checkOutDate = inputCheckOut(userDate, userTime)
 
-                        var flagCheckout = createCheckOut(empID, checkOutDate)
+                        val flagCheckout = createCheckOut(empID, checkOutDate)
                         println(flagCheckout)
 
                         when (flagCheckout) {
@@ -312,7 +317,7 @@ fun main() {
                                 println("Checkout for the Employee ID $empID has been created successfully")
                             }
                             "timeError" -> {
-                                println("Oops! The Check-Out time ${checkOutDate} is behind the Check-In date time")
+                                println("Oops! The Check-Out time $checkOutDate is behind the Check-In date time")
                             }
                             "null" -> {
                                 println("Oops! The Employee has not checked-in for the day ${checkOutDate.toLocalDate()}")
