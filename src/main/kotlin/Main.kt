@@ -54,15 +54,21 @@ fun validateInputCheckIn(userDate: String?, userTime: String?): LocalDateTime {
 
             return if (inputDateTime <= now) {
                 inputDateTime
-            } else {
+            }
+            else
+            {
                 println("Input date/time is in the future. Using current date and time instead.")
                 now
             }
-        } catch (e: Exception) {
+        }
+        catch (e: Exception)
+        {
             println("Invalid date/time format. Using current date and time instead.")
             now
         }
-    } else {
+    }
+    else
+    {
         println("Proceeding with current time and date as Check-In Date Time...")
         now
     }
@@ -82,7 +88,9 @@ fun inputCheckOut(userDate: String?, userTime: String?): LocalDateTime {
                 return now
             }
             inputDateTime
-        } catch (e: Exception) {
+        }
+        catch (e: Exception)
+        {
             println("Invalid date/time format. Using current date and time instead.")
             now
         }
@@ -108,7 +116,9 @@ fun createCheckIn(empID: Int, checkInDate: LocalDateTime): String {
     try {
         attendanceList.add(DataAttendance(empID, checkInDate))
         return "true"
-    } catch (e: Exception) {
+    }
+    catch (e: Exception)
+    {
         println("Error occurred: ${e.message}")
         return "e"
     }
@@ -154,14 +164,17 @@ fun createCheckOut(empID: Int, checkOutDate: LocalDateTime): String {
             }
         }
         return "null"
-    } catch (e: Exception) {
+    }
+    catch (e: Exception)
+    {
         println("Error occurred: ${e.message}")
         return e.toString()
     }
 }
 
 fun workingHoursList(attendanceList: List<DataAttendance>): String {
-    return attendanceList.joinToString(separator = "\n") {
+    return attendanceList.joinToString(separator = "\n")
+    {
         "Employee ID: ${it.employeeID}, Check-In DateTime: ${it.checkInDateTime}, Check-Out DateTime: ${it.checkOutDateTime}, Working Hours: ${it.workingHours ?: "Not recorded yet"}"
     }
 }
