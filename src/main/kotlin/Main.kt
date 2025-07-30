@@ -114,8 +114,15 @@ fun validateAttendance(empID: Int, checkInDate: LocalDateTime): Boolean {
 
 fun createCheckIn(empID: Int, checkInDate: LocalDateTime): String {
     try {
-        attendanceList.add(DataAttendance(empID, checkInDate))
-        return "true"
+        if (validateAttendance(empID, checkInDate))
+        {
+            attendanceList.add(DataAttendance(empID, checkInDate))
+            return "true"
+        }
+        else
+        {
+            return "Employee $empID has checked-in already for the day ${checkInDate.toLocalDate()}"
+        }
     }
     catch (e: Exception)
     {
