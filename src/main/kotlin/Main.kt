@@ -15,8 +15,8 @@ data class DataEmployee(
 data class DataAttendance(
     val employeeID: Int,
     val checkInDateTime: LocalDateTime,
-    val checkOutDateTime: LocalDateTime? = null,
-    val workingHours: LocalTime? = null
+    var checkOutDateTime: LocalDateTime? = null,
+    var workingHours: LocalTime? = null
 )
 
 val employees = mutableListOf<DataEmployee>()
@@ -151,14 +151,9 @@ fun createCheckOut(empID: Int, checkOutDate: LocalDateTime): String {
                 //formatting the obtained minutes of working into hour format
                 val formattedWorkingHours = LocalTime.of((workingMinutes / 60).toInt(), (workingMinutes % 60).toInt())
 
-
-                val updatedAttendance = attendance.copy(
-                    checkOutDateTime = checkOutDate,
-                    workingHours = formattedWorkingHours
-                )
-
-                //updates the dataAttendance data class with the check-out time and working hours.
-                attendanceList[attendanceIndex] = updatedAttendance
+                //updates the attendanceList data class with the check-out time and working hours.
+                attendanceList[attendanceIndex].checkOutDateTime = checkOutDate
+                attendanceList[attendanceIndex].workingHours = formattedWorkingHours
 
                 return "true"
             }
