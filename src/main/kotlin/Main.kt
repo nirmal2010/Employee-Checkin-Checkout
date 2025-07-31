@@ -201,37 +201,35 @@ fun main() {
 
         when (readlnOrNull()?.trim()) {
             "1" -> {
-                println("How many employees would you like to add?")
-                val numEmployees = readln().toIntOrNull() ?: 0
+                var addingEmployee = true
 
-                if (numEmployees <= 0)
-                {
-                    println("Invalid number. Returning to main menu.")
-                }
-                else {
-                    for (i in 1..numEmployees)
-                    {
-                        println("Enter details for Employee #$i")
+                while (addingEmployee) {
+                    println("Enter details for new employee")
 
-                        print("First Name of Employee $i: ")
-                        val firstName = readln()
+                    print("First Name: ")
+                    val firstName = readln()
 
-                        print("Last Name of Employee $i: ")
-                        val lastName = readln()
+                    print("Last Name: ")
+                    val lastName = readln()
 
-                        val fullName = "$firstName $lastName"
+                    val fullName = "$firstName $lastName"
 
-                        print("Role of $fullName : ")
-                        val role = readln()
+                    print("Role of $fullName: ")
+                    val role = readln()
 
-                        print("Contact Number of $fullName: ")
-                        val contactNumber = readln()
+                    print("Contact Number of $fullName: ")
+                    val contactNumber = readln()
 
-                        print("Reporting To (Manager ID): ")
-                        val reportingTo = readln().toIntOrNull() ?: 0
+                    print("Reporting To (Manager ID): ")
+                    val reportingTo = readln().toIntOrNull() ?: 0
 
-                        addEmployee(firstName, lastName, role, contactNumber, reportingTo)
-                        println("Employee '$firstName $lastName' added successfully!\n")
+                    addEmployee(firstName, lastName, role, contactNumber, reportingTo)
+                    println("Employee '$firstName $lastName' added successfully!\n")
+
+                    println("Do you want to add another employee? (Yes/No): ")
+                    val response = readlnOrNull()?.trim()?.lowercase()
+                    if (response != "yes" && response != "y") {
+                        addingEmployee = false
                     }
                 }
 
@@ -334,10 +332,10 @@ fun main() {
                                 println("Oops! The Check-Out time $checkOutDate is behind the Check-In date time")
                             }
                             "null" -> {
-                                println("Oops! The Employee has not checked-in for the day ${checkOutDate?.toLocalDate()}")
+                                println("Oops! The Employee has not checked-in for the day ${checkOutDate.toLocalDate()}")
                             }
                             "false" ->{
-                                println("Employee have already checked-out for the day ${checkOutDate?.toLocalDate()}")
+                                println("Employee have already checked-out for the day ${checkOutDate.toLocalDate()}")
                             }
                             else -> {
                                 {
