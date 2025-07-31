@@ -44,64 +44,56 @@ fun employeeList() {
     }
 }
 
-fun validateInputCheckIn(userDate: String?, userTime: String?): LocalDateTime {
+fun validateInputCheckIn(userDate: String?, userTime: String?): LocalDateTime? {
     val formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm")
-    val now = LocalDateTime.now().withSecond(0).withNano(0)
 
-    return if (!userDate.isNullOrBlank() && !userTime.isNullOrBlank()) {
-        try {
+    return try {
+        if (!userDate.isNullOrBlank() && !userTime.isNullOrBlank()) {
             val dateTimeStr = "$userDate $userTime"
             val inputDateTime = LocalDateTime.parse(dateTimeStr, formatter)
+            val now = LocalDateTime.now().withSecond(0).withNano(0)
 
-            return if (inputDateTime <= now) {
+            if (inputDateTime.isAfter(now)) {
+                println("Date/time is in the future.")
+                null
+            } else {
                 inputDateTime
             }
-            else
-            {
-                println("Input date/time is in the future. Using current date and time instead.")
-                now
-            }
+        } else {
+            println("Both Check-In date and time must be entered.")
+            null
         }
-        catch (e: Exception)
-        {
-            println("Invalid date/time format. Using current date and time instead.")
-            now
-        }
-    }
-    else
-    {
-        println("Proceeding with current time and date as Check-In Date Time...")
-        now
+    } catch (e: Exception) {
+        println("Invalid format. Use DD-MM-YYYY and HH:MM.")
+        null
     }
 }
 
-fun inputCheckOut(userDate: String?, userTime: String?): LocalDateTime {
+fun inputCheckOut(userDate: String?, userTime: String?): LocalDateTime? {
     val formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm")
-    val now = LocalDateTime.now().withSecond(0).withNano(0)
 
-    return if (!userDate.isNullOrBlank() && !userTime.isNullOrBlank()) {
-        try {
+    return try {
+        if (!userDate.isNullOrBlank() && !userTime.isNullOrBlank()) {
             val dateTimeStr = "$userDate $userTime"
             val inputDateTime = LocalDateTime.parse(dateTimeStr, formatter)
+            val now = LocalDateTime.now().withSecond(0).withNano(0)
 
-            if (inputDateTime >= now) {
-                println("Input date/time is in the future. Using current date and time instead.")
-                return now
+            if (inputDateTime.isAfter(now)) {
+                println("Date/time is in the future.")
+                null
+            } else {
+                inputDateTime
             }
-            inputDateTime
+        } else {
+            println("Both Check-Out date and time must be entered.")
+            null
         }
-        catch (e: Exception)
-        {
-            println("Invalid date/time format. Using current date and time instead.")
-            now
-        }
-    }
-    else
-    {
-        println("Proceeding with current time and date as Check-Out Date Time...")
-        now
+    } catch (e: Exception) {
+        println("Invalid format. Use DD-MM-YYYY and HH:MM.")
+        null
     }
 }
+
 
 // checks whether the list of employee has the input employee id
 fun validateEmployeeID(empID: Int): Boolean {
@@ -132,38 +124,40 @@ fun createCheckIn(empID: Int, checkInDate: LocalDateTime): String {
     }
 }
 
-fun createCheckOut(empID: Int, checkOutDate: LocalDateTime): String {
+fun createCheckOut(empID: Int, checkOutDate: LocalDateTime?): String {
     try {
         val attendanceIndex = attendanceList.indexOfFirst {
-            it.employeeID == empID && it.checkInDateTime.toLocalDate() == checkOutDate.toLocalDate()
+            it.employeeID == empID && it.checkInDateTime.toLocalDate() == checkOutDate?.toLocalDate()
         }
 
         if (attendanceIndex != -1) {
             val attendance = attendanceList[attendanceIndex]
 
             //validating whether checkOutDateTime is not entered already and the checkOutDate is not greater than the checkInDateTime
-            if (attendance.checkOutDateTime == null && checkOutDate.isAfter(attendance.checkInDateTime)) {
+            if (checkOutDate != null) {
+                if (attendance.checkOutDateTime == null && checkOutDate.isAfter(attendance.checkInDateTime))
+                {
+                    //java duration is used to find the difference of time between the check-in and check-out.
+                    //toMinute() helps to convert the obtained value(in seconds) to minutes.
+                    val workingMinutes = Duration.between(attendance.checkInDateTime, checkOutDate).toMinutes()
 
-                //java duration is used to find the difference of time between the check-in and check-out.
-                //toMinute() helps to convert the obtained value(in seconds) to minutes.
-                val workingMinutes = Duration.between(attendance.checkInDateTime, checkOutDate).toMinutes()
+                    //formatting the obtained minutes of working into hour format
+                    val formattedWorkingHours = LocalTime.of((workingMinutes / 60).toInt(), (workingMinutes % 60).toInt())
 
-                //formatting the obtained minutes of working into hour format
-                val formattedWorkingHours = LocalTime.of((workingMinutes / 60).toInt(), (workingMinutes % 60).toInt())
+                    //updates the attendanceList data class with the check-out time and working hours.
+                    attendanceList[attendanceIndex].checkOutDateTime = checkOutDate
+                    attendanceList[attendanceIndex].workingHours = formattedWorkingHours
 
-                //updates the attendanceList data class with the check-out time and working hours.
-                attendanceList[attendanceIndex].checkOutDateTime = checkOutDate
-                attendanceList[attendanceIndex].workingHours = formattedWorkingHours
-
-                return "true"
-            }
-            else if(checkOutDate.isBefore(attendance.checkInDateTime) || checkOutDate.isAfter(LocalDateTime.now()))
-            {
-                return "timeError"
-            }
-            else
-            {
-                return "false"
+                    return "true"
+                }
+                else if(checkOutDate.isBefore(attendance.checkInDateTime) || checkOutDate.isAfter(LocalDateTime.now()))
+                {
+                    return "timeError"
+                }
+                else
+                {
+                    return "false"
+                }
             }
         }
         return "null"
@@ -237,7 +231,7 @@ fun main() {
                         val reportingTo = readln().toIntOrNull() ?: 0
 
                         addEmployee(firstName, lastName, role, contactNumber, reportingTo)
-                        println("✅ Employee '$firstName $lastName' added successfully!\n")
+                        println("Employee '$firstName $lastName' added successfully!\n")
                     }
                 }
 
@@ -254,12 +248,29 @@ fun main() {
                 }
                 else
                 {
-                    println("Enter Check-In Date (DD-MM-YYYY) or press Enter for today:")
-                    val date = readln().ifBlank { null }
-                    println("Enter Check-In Time (HH:MM) or press Enter for now:")
-                    val time = readln().ifBlank { null }
+                    var checkinDate: LocalDateTime? = null
+                    while (checkinDate == null)
+                    {
+                        println("Would you like to enter the Check-In date and time? (Yes/No):")
+                        val response = readlnOrNull()?.trim()?.lowercase()
 
-                    val checkinDate = validateInputCheckIn(date, time)
+                        if (response == "no" || response == "n")
+                        {
+                            checkinDate = LocalDateTime.now().withSecond(0).withNano(0)
+                            println("Proceeding with current date/time: $checkinDate")
+                        }
+                        else
+                        {
+                            println("Enter Check-In Date (DD-MM-YYYY):")
+                            val date = readlnOrNull()?.trim()
+
+                            println("Enter Check-In Time (HH:MM):")
+                            val time = readlnOrNull()?.trim()
+
+                            checkinDate = validateInputCheckIn(date, time)
+                        }
+                    }
+
                     if (validateAttendance(empID, checkinDate)) {
                         val flagCheckin = createCheckIn(empID, checkinDate)
                         if (flagCheckin=="true") {
@@ -292,25 +303,28 @@ fun main() {
                     }
                     else
                     {
-                        println("Would you like to enter the Check-Out date and time? (Yes/No):")
-                        val checkOutResponse = readlnOrNull()?.lowercase()
+                        // Use inputCheckOut() to validate user input and default if necessary
+                        var checkOutDate: LocalDateTime? = null
+                        while (checkOutDate == null) {
+                            println("Would you like to enter the Check-Out date and time? (Yes/No):")
+                            val response = readlnOrNull()?.trim()?.lowercase()
 
-                        var userDate: String? = null
-                        var userTime: String? = null
+                            if (response == "no" || response == "n") {
+                                checkOutDate = LocalDateTime.now().withSecond(0).withNano(0)
+                                println("Proceeding with current date/time: $checkOutDate")
+                            } else {
+                                println("Enter Check-Out Date (DD-MM-YYYY):")
+                                val date = readlnOrNull()?.trim()
 
-                        if (checkOutResponse == "yes" || checkOutResponse == "y") {
-                            println("Enter Check-Out Date (DD-MM-YYYY):")
-                            userDate = readln()
+                                println("Enter Check-Out Time (HH:MM):")
+                                val time = readlnOrNull()?.trim()
 
-                            println("Enter Check-Out Time (HH:MM):")
-                            userTime = readln()
+                                checkOutDate = inputCheckOut(date, time)
+                            }
                         }
 
-                        // Use inputCheckOut() to validate user input and default if necessary
-                        val checkOutDate = inputCheckOut(userDate, userTime)
 
                         val flagCheckout = createCheckOut(empID, checkOutDate)
-                        println(flagCheckout)
 
                         when (flagCheckout) {
                             "true" -> {
@@ -320,10 +334,10 @@ fun main() {
                                 println("Oops! The Check-Out time $checkOutDate is behind the Check-In date time")
                             }
                             "null" -> {
-                                println("Oops! The Employee has not checked-in for the day ${checkOutDate.toLocalDate()}")
+                                println("Oops! The Employee has not checked-in for the day ${checkOutDate?.toLocalDate()}")
                             }
                             "false" ->{
-                                println("Employee have already checked-out for the day ${checkOutDate.toLocalDate()}")
+                                println("Employee have already checked-out for the day ${checkOutDate?.toLocalDate()}")
                             }
                             else -> {
                                 {
