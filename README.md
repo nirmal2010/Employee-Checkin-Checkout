@@ -1,42 +1,70 @@
-# Employee Check-In Check-Out
+# Employee Check-In/Check-Out System
 
-> OVERVIEW
 
-A Command Line Interface (CLI) based Employee Check-In System using Kotlin. The system is designed to track employee check-ins per day and ensure each employee checks in only once per day.
-Here number of employees will be added. Based on the input, employee records will be created based on user input.
+A **Kotlin-based Command Line Interface (CLI)** application to manage employee check-ins and check-outs. It ensures that each employee checks in once per day and calculates total working hours.
 
->  DATA CLASSES
+---
 
-**1.Employee**
-  - employeeID :Int
-  - firstName :String 
-  - lastName :String
-  - role :String
-  - contactNumber :Long
-  - reportingTo: Int
-    
-**2.EmployeeAttendance**
-  - employeeId :Int
-  - checkInDateTime :LocalDateTime
-  - checkOutDateTime :LocalDateTime
-  - workingHours: LocalTime
+## Features
 
-> FUNCTIONS
-  
-**1.addEmployee()**
-  - gets firstName,lastName,role,contactNumber and reportingTo from user and creates an id automatically.
-  - stores in employees using Employee data class.
+- Add new employees
+- View employee list
+- Check-in with optional manual time
+- Check-out with optional manual time and auto-calculate working hours
+- Prevent multiple check-ins and check-outs per day
+- Display working hours report
 
-**2.employeeList()**
-  - details of all employees will be returned.
-    
-**3.createCheckIn()**
-  - gets user id and takes dateTime and validates id using validateID() and validateAttendance().
-  - stores data in checkedInDetails map using CheckIn(Data class).
+---
 
-**4.validateEmployeeID()**
-  - checks whether id is present in employeeDetails map.
+## Data Models
 
-**5.validateAttendance()**
-  - checks whether id is present in checkedInDetails map.
+### 1. `DataEmployee`
+```
+employeeID: Int
+firstName: String
+lastName: String
+role: String
+contactNumber: String
+reportingTo: Int
+```
 
+### 2. `DataEmployee`
+```
+employeeID: Int,
+checkInDateTime: LocalDateTime,
+checkOutDateTime: LocalDateTime? = null,
+workingHours: LocalTime? = null
+```
+
+---
+
+## Funtions
+
+### 1. `addEmployee()`
+> Takes employee details as input.
+
+> Generates a unique employee ID (numeric).
+
+> Stores employee in the list.
+
+### 2. `employeeList()`
+> Prints details of all registered employees.
+
+### 3. `createCheckIn()`
+> Validates employee ID and duplicate check-ins.
+
+> Adds check-in time for the current or specified date time.
+
+### 4. `createCheckOut()`
+> Allows check-out only if checked-in is present and not already checked-out.
+
+> Calculates total working hours based on check-in/out.
+
+### 5. `validateEmployeeID()`
+> Checks if employee ID exists in the list.
+
+### 6. `validateAttendance()`
+> Checks if check-in already exists for the same date.
+
+### 7. `workingHoursList()`
+> Displays all check-in/out times and total hours worked.
