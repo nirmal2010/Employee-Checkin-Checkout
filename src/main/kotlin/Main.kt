@@ -8,7 +8,7 @@ data class DataEmployee(
     val firstName: String,
     val lastName: String,
     val role: String,
-    val contactNumber: String,
+    val contactNumber: Long,
     val reportingTo: Int
 ) {
     override fun toString(): String {
@@ -28,9 +28,47 @@ open class Employee() {
     val employees = mutableListOf<DataEmployee>()
     var employeeID = 1
 
-    // Adds the employee into the database
-    fun addEmployee(firstName: String, lastName: String, role: String, contactNumber: String, reportingTo: Int) {
+    // Validate employee input
+    fun validateEmployeeInput(
+        firstName: String, lastName: String, role: String,
+        contactNumber: Long, reportingTo: Int
+    ): Boolean {
+        if (firstName.isBlank()) {
+            println("First Name should not be blank!")
+            return false
+        }
+        if (lastName.isBlank()) {
+            println("Last Name should not be blank!")
+            return false
+        }
+        if (role.isBlank()) {
+            println("Role should not be blank!")
+            return false
+        }
+        if (contactNumber == 0L || ((contactNumber.toString()).length <=9)) {
+            println("Contact number must be valid!")
+            return false
+        }
+
+        if (reportingTo <= 0) {
+            println("Invalid Reporting To ID.")
+            return false
+        }
+        if (firstName.isBlank() || lastName.isBlank() || role.isBlank() || contactNumber == 0L) {
+            println("All the fields are mandatory. Please enter the values!")
+            return false
+        }
+
+        return true
+    }
+
+}
+
+class EmployeeList: Employee()
+{
+    fun addEmployee(firstName: String, lastName: String, role: String, contactNumber: Long, reportingTo: Int) {
         //adds the employee detail into the employee database using Employee data class
+        // Adds the employee into the database
         employees.add(DataEmployee(employeeID, firstName, lastName, role, contactNumber, reportingTo))
         //increments the employee id for dynamic id generation
         employeeID++
@@ -38,8 +76,15 @@ open class Employee() {
 
     // Prints the list of employees
     fun employeeList() {
-        for (employee in employees) {
-            println(employee)
+        if (employees.isEmpty())
+        {
+            println("Oops! You haven't create any employee. Please create employee and try viewing employee list.")
+        }
+        else{
+            println("\n--- Employee List ---")
+            for (employee in employees) {
+                println(employee)
+            }
         }
     }
 }
@@ -180,6 +225,8 @@ class Attendance():Employee() {
 
 fun main() {
     val employeeService = Employee()
+    val employeeListService = EmployeeList()
+    val employeeManager = EmployeeManager(employeeService, employeeListService)
     val attendanceService = Attendance()
     var isRunning = true
 
@@ -195,41 +242,14 @@ fun main() {
 
         when (readlnOrNull()?.trim()) {
             "1" -> {
-                var addingEmployee = true
-
-                while (addingEmployee) {
-                    println("Enter details for new employee")
-
-                    print("First Name: ")
-                    val firstName = readln()
-
-                    print("Last Name: ")
-                    val lastName = readln()
-
-                    val fullName = "$firstName $lastName"
-
-                    print("Role of $fullName: ")
-                    val role = readln()
-
-                    print("Contact Number of $fullName: ")
-                    val contactNumber = readln()
-
-                    print("Reporting To (Manager ID): ")
-                    val reportingTo = readln().toIntOrNull() ?: 0
-
-                    employeeService.addEmployee(firstName, lastName, role, contactNumber, reportingTo)
-                    println("Employee '$firstName $lastName' added successfully!\n")
-
-                    println("Do you want to add another employee? (Yes/No): ")
-                    val response = readlnOrNull()?.trim()?.lowercase()
-                    if (response != "yes" && response != "y") {
-                        addingEmployee = false
-                    }
-                }
-
+                //calls the employeeManager object and the object has the EmployeeManager class reference
+                // then the addEmployee function in the class EmployeeManager will be called
+                employeeManager.addEmployee()
             }
 
-            "2" -> employeeService.employeeList()
+            //calls the employeeManager object and the object has the EmployeeManager class reference
+            // then the viewEmployeeList function in the class EmployeeManager will be called
+            "2" -> employeeManager.viewEmployeeList()
 
             "3" -> {
                 println("Enter Employee ID for Check-In:")
